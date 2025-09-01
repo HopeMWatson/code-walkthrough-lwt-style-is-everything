@@ -2,11 +2,14 @@
 venv
 .env
 env
+activate.sh
+venv-lwt-style-is-everything/
+workshop.duckdb
 
 target/
 dbt_packages/
 logs/
-profiles.yml
+# profiles.yml
 
 .DS_Store
 

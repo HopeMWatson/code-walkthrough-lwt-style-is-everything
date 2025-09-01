@@ -1,0 +1,7 @@
+lwt-style-is-everything:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: ./workshop.duckdb
+      threads: 4
