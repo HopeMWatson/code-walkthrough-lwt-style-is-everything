@@ -3,6 +3,14 @@ name: PR Size Check
 on:
   pull_request:
     types: [opened, synchronize]
+    
+  workflow_dispatch:
+    # Optional: You can add input parameters if needed
+    inputs:
+      reason:
+        description: 'Reason for manual run'
+        required: false
+        default: 'Manual trigger'
 
 jobs:
   size-check:
