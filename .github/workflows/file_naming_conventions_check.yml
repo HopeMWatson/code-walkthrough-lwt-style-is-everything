@@ -1,0 +1,70 @@
+name: Check dbt model naming conventions
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  naming-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Validate model naming conventions (.sql + .yml/.yaml)
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Checking dbt model naming conventions..."
+
+          # Helper to safely run find only if the directory exists
+          find_safe () {
+            local dir="$1"; shift
+            if [ -d "$dir" ]; then
+              # shellcheck disable=SC2068
+              find "$dir" -type f \( -name "*.sql" -o -name "*.yml" -o -name "*.yaml" \) $@
+            fi
+          }
+
+          invalid_staging=""
+          invalid_marts=""
+
+          # Staging: must start with stg_
+          # Flag any *.sql/*.yml/*.yaml in models/staging that DO NOT start with stg_
+          staging_dir="models/staging"
+          if [ -d "$staging_dir" ]; then
+            invalid_staging=$(find_safe "$staging_dir" \
+              ! -name "stg_*.sql" \
+              ! -name "stg_*.yml" \
+              ! -name "stg_*.yaml" \
+            || true)
+          fi
+
+          # Marts: must start with fct_ OR dim_
+          marts_dir="models/marts"
+          if [ -d "$marts_dir" ]; then
+            invalid_marts=$(find_safe "$marts_dir" \
+              ! -name "fct_*.sql" ! -name "dim_*.sql" \
+              ! -name "fct_*.yml" ! -name "dim_*.yml" \
+              ! -name "fct_*.yaml" ! -name "dim_*.yaml" \
+            || true)
+          fi
+
+          if [ -n "${invalid_staging:-}" ] || [ -n "${invalid_marts:-}" ]; then
+            echo "❌ Invalid model file names detected:"
+            if [ -n "${invalid_staging:-}" ]; then
+              echo ""
+              echo "Models in $staging_dir must start with stg_ (covers .sql, .yml, .yaml):"
+              echo "$invalid_staging"
+            fi
+            if [ -n "${invalid_marts:-}" ]; then
+              echo ""
+              echo "Models in $marts_dir must start with fct_ or dim_ (covers .sql, .yml, .yaml):"
+              echo "$invalid_marts"
+            fi
+            exit 1
+          else
+            echo "✅ All model and YAML filenames follow conventions."
+          fi
