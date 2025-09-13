@@ -1,4 +1,4 @@
-name: Lint SQL with SQLFluff
+name: Lint SQL with SQLFluff (dbt templater)
 
 on:
   pull_request:
@@ -32,14 +32,65 @@ jobs:
         run: |
           echo "⬇️ Installing dbt $DBT_VERSION..."
           python -m pip install --upgrade pip --quiet
-          pip install "urllib3<2.0" --quiet  # avoid SSL warnings
-          pip install "dbt-core==$DBT_VERSION" dbt-duckdb --quiet
-          pip install "sqlfluff>=3.0.0" "sqlfluff-templater-dbt>=3.0.0"
+          pip install "urllib3<2.0" --quiet   # keep requests stack stable/noisy
+          pip install "dbt-core==${DBT_VERSION}" dbt-duckdb --quiet
+          pip install "sqlfluff>=3.0.0" "sqlfluff-templater-dbt>=3.0.0" --quiet
           sqlfluff version
           dbt --version
 
-      - name: Run SQLFluff lint
+      - name: Create temporary DuckDB profile (in-memory)
+        env:
+          DBT_PROFILES_DIR: $HOME/.dbt
         run: |
           set -e
-          # Add --format github-annotation for inline PR comments
-          sqlfluff lint models macros seeds snapshots --format github-annotation
+          mkdir -p "$DBT_PROFILES_DIR"
+          # Read 'profile:' from dbt_project.yml, default to 'default'
+          PROFILE_NAME=$(python - <<'PY'
+import pathlib, yaml
+name = "default"
+p = pathlib.Path("dbt_project.yml")
+if p.exists():
+    with p.open() as f:
+        try:
+            y = yaml.safe_load(f) or {}
+            name = y.get("profile") or name
+        except Exception:
+            pass
+print(name)
+PY
+)
+          cat > "$DBT_PROFILES_DIR/profiles.yml" <<YML
+${PROFILE_NAME}:
+  target: ci
+  outputs:
+    ci:
+      type: duckdb
+      path: ":memory:"
+YML
+          echo "Using dbt profile '$PROFILE_NAME' with in-memory DuckDB."
+
+      - name: Run SQLFluff lint (dbt templater)
+        env:
+          DBT_PROFILES_DIR: $HOME/.dbt
+        run: |
+          set -e
+          # Lint source files (not compiled artifacts) and annotate results in PR UI
+          sqlfluff lint models macros seeds snapshots --templater dbt --format github-annotation
+
+      # OPTIONAL: Only lint changed files in PRs (faster). Uncomment to use.
+      # - name: Lint only changed files (PRs)
+      #   if: github.event_name == 'pull_request'
+      #   env:
+      #     DBT_PROFILES_DIR: $HOME/.dbt
+      #   run: |
+      #     set -e
+      #     git fetch origin ${{ github.base_ref }} --depth=1 || true
+      #     CHANGED=$(git diff --name-only --diff-filter=ACMR origin/${{ github.base_ref }}...HEAD \
+      #       | grep -E '^(models|macros|seeds|snapshots)/.*\.(sql|sql.j2|jinja)$' || true)
+      #     if [ -z "$CHANGED" ]; then
+      #       echo "No changed SQL/Jinja files."
+      #     else
+      #       echo "Linting changed files:"
+      #       echo "$CHANGED"
+      #       sqlfluff lint $CHANGED --templater dbt --format github-annotation
+      #     fi
