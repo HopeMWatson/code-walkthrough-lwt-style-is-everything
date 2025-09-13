@@ -1,0 +1,72 @@
+name: Lint SQL with SQLFluff (dbt templater)
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  sqlfluff-lint:
+    runs-on: ubuntu-latest
+
+    env:
+      DBT_PROFILES_DIR: "."   # use repo's DuckDB profiles.yml
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Install dbt + SQLFluff
+        run: |
+          set -e
+          python -m pip install --upgrade pip
+          pip install "urllib3<2.0"
+          pip install "dbt-core==1.10.10" dbt-duckdb duckdb
+          pip install "sqlfluff>=3.0.0" "sqlfluff-templater-dbt>=3.0.0"
+          sqlfluff version
+          dbt --version
+
+      - name: Cache dbt_packages
+        uses: actions/cache@v4
+        with:
+          path: dbt_packages
+          key: ${{ runner.os }}-dbt-packages-${{ hashFiles('packages.yml', 'packages.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-dbt-packages-
+
+      - name: Install dbt packages
+        run: dbt deps
+
+      - name: Run SQLFluff lint (dbt templater)
+        run: |
+          set -e
+          PATHS=""
+          for d in models macros seeds snapshots; do
+            [ -d "$d" ] && PATHS="$PATHS $d"
+          done
+          [ -z "$PATHS" ] && echo "No dbt directories found." && exit 0
+          sqlfluff lint $PATHS --templater dbt --format github-annotation
+
+
+      # OPTIONAL: Only lint changed files in PRs (faster). Uncomment to use.
+      # - name: Lint only changed files (PRs)
+      #   if: github.event_name == 'pull_request'
+      #   env:
+      #     DBT_PROFILES_DIR: $HOME/.dbt
+      #   run: |
+      #     set -e
+      #     git fetch origin ${{ github.base_ref }} --depth=1 || true
+      #     CHANGED=$(git diff --name-only --diff-filter=ACMR origin/${{ github.base_ref }}...HEAD \
+      #       | grep -E '^(models|macros|seeds|snapshots)/.*\.(sql|sql.j2|jinja)$' || true)
+      #     if [ -z "$CHANGED" ]; then
+      #       echo "No changed SQL/Jinja files."
+      #     else
+      #       echo "Linting changed files:"
+      #       echo "$CHANGED"
+      #       sqlfluff lint $CHANGED --templater dbt --format github-annotation
+      #     fi

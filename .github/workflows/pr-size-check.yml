@@ -1,0 +1,60 @@
+name: PR Size Check
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    
+  workflow_dispatch:
+    # Optional: You can add input parameters if needed
+    inputs:
+      reason:
+        description: 'Reason for manual run'
+        required: false
+        default: 'Manual trigger'
+
+jobs:
+  size-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Check PR size limits
+      run: |
+        echo "🔍 Checking PR size limits..."
+        
+        # Get list of changed files
+        CHANGED_FILES=$(git diff --name-only origin/main...HEAD)
+        FILE_COUNT=$(echo "$CHANGED_FILES" | wc -l)
+        
+        echo "📁 Files changed: $FILE_COUNT"
+        
+        # Check file count limit
+        if [ "$FILE_COUNT" -gt 50 ]; then
+          echo "❌ PR exceeds file limit: $FILE_COUNT > 50 files"
+          echo "Please break this into smaller PRs"
+          exit 1
+        fi
+        
+        # Check lines of code limit
+        LINES_ADDED=$(git diff --numstat origin/main...HEAD | awk '{sum += $1} END {print sum+0}')
+        LINES_REMOVED=$(git diff --numstat origin/main...HEAD | awk '{sum += $2} END {print sum+0}')
+        NET_LINES=$((LINES_ADDED - LINES_REMOVED))
+        
+        echo "📊 Lines added: $LINES_ADDED"
+        echo "📊 Lines removed: $LINES_REMOVED"
+        echo "📊 Net lines: $NET_LINES"
+        
+        if [ "$LINES_ADDED" -gt 1000 ]; then
+          echo "❌ PR exceeds line limit: $LINES_ADDED > 1,000 lines"
+          echo "Please break this into smaller PRs"
+          exit 1
+        fi
+        
+        echo "✅ PR size is within limits"
+        echo "📋 Summary:"
+        echo "  - Files: $FILE_COUNT/50"
+        echo "  - Lines added: $LINES_ADDED/1,000"

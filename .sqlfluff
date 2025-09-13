@@ -1,5 +1,5 @@
 [sqlfluff]
-templater = dbt-cloud
+templater = dbt
 dialect = snowflake
 runaway_limit = 10
 max_line_length = 80
