@@ -91,14 +91,14 @@ We need to run our actions from GitHub which means we need to create a remote ve
 
 ## 3. Read action code and learn its functions
 1. Open `.github/workflows`.
-2. You see the workflows and the controller file (more on this later).
-3. Open up each of the actions and read over what they are doing and how they function.
-   a. The PR size workflow ensure we do not add too many new files or new lines of code in a single PR.
-   b. The file naming convention ensures we name files according to a prefix rule.
-   c. The linting workflow enforces the rules we've specififed in our `.sqlfluff` file. Open up the `.sqlfluff file to look at the rulesets. This determines how our sql should be styled. 💅
-   d. Our `dbt-ci-job` workflow builds only what has been modified and ensures our sql is actually valid to build the tables and views. Additionally, it runs all the data test checks. 
-   e. AI reivewer `pr_ai_reviewer` summons claude via API key to review and comment on the PR. 
-   f. Importantly, we want to specify the order in which these workflows run. For example, if our linting fails we want that to happen before we have to pay to use any tokens for Claude. 
+2. You see the workflows and the controller file (more on this later).  
+3. Open up each of the actions and read over what they are doing and how they function.  
+   a. The PR size workflow ensure we do not add too many new files or new lines of code in a single PR.  
+   b. The file naming convention ensures we name files according to a prefix rule.  
+   c. The linting workflow enforces the rules we've specififed in our `.sqlfluff` file. Open up the `.sqlfluff file to look at the rulesets. This determines how our sql should be styled. 💅  
+   d. Our `dbt-ci-job` workflow builds only what has been modified and ensures our sql is actually valid to build the tables and views. Additionally, it runs all the data test checks.  
+   e. AI reivewer `pr_ai_reviewer` summons claude via API key to review and comment on the PR.  
+   f. Importantly, we want to specify the order in which these workflows run. For example, if our linting fails we want that to happen before we have to pay to use any tokens for Claude.  
 
 There is a lot going on here and this the heart of this workshop, so take time to understand on your own time too! 
 
@@ -113,7 +113,7 @@ There is a lot going on here and this the heart of this workshop, so take time t
     Note my spelling mistake of "comment" to "commment" is intentional. 
 3. Save the change in the VSCode.
 4. Add and commit the change:
-    ```git commit -am "dummy comment to view pipelines" 
+    ```git commit -am "dummy comment to view pipelines" ```
 5. Before we move on can you guess workflow(s) of the four workflows will fail: pr size, file naming, sqlfluff, and dbt build? Ignore AI reviewer pipeline for now. 
 
 ## 5. Investigate pipelines on GitHub 
@@ -134,7 +134,7 @@ There is a lot going on here and this the heart of this workshop, so take time t
     ```git checkout working-branch```
     ``` git status``(ensure it's up to date)
 2. 
--- TODO placeholder for sqlfluff changes and then committing 
+-- TODO placeholder for sqlfluff changes and then committing  
 
 
 ## 7. Recapping, Next Steps, and Cleanup
