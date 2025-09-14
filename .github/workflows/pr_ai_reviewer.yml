@@ -19,6 +19,8 @@ jobs:
           fetch-depth: 1
 
       - uses: anthropics/claude-code-action@v1
+        env: 
+          DISABLE_PROMPT_CACHING: "1"
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: |
@@ -34,7 +36,7 @@ jobs:
             Provide detailed feedback using inline comments for specific issues.
 
           claude_args: |
-            --model claude-3-5-haiku-20241022
+            --model claude-sonnet-4-20250514
             --max-turns 1
-            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff --unified=3 --name-only),Bash(gh pr view --json=number,title,body,files)"
             --disallowedTools "*"
