@@ -96,6 +96,7 @@ We need to run our actions from GitHub which means we need to create a remote ve
    a. The PR size workflow ensure we do not add too many new files or new lines of code in a single PR.<br>
    b. The file naming convention ensures we name files according to a prefix rule.<br> 
    c. The linting workflow enforces the rules we've specififed in our `.sqlfluff` file. Open up the `.sqlfluff file to look at the rulesets. This determines how our sql should be styled. 💅<br>
+   --TODO fix linebreak mess that looks sloppy when rendered 
    d. Our `dbt-ci-job` workflow builds only what has been modified and ensures our sql is actually valid to build the tables and views. Additionally, it runs all the data test checks.<br>
    e. AI reivewer `pr_ai_reviewer` summons claude via API key to review and comment on the PR.<br>
    f. Importantly, we want to specify the order in which these workflows run. For example, if our linting fails we want that to happen before we have to pay to use any tokens for Claude.<br>
