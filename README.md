@@ -92,13 +92,13 @@ We need to run our actions from GitHub which means we need to create a remote ve
 ## 3. Read action code and learn its functions
 1. Open `.github/workflows`.
 2. You see the workflows and the controller file (more on this later).  
-3. Open up each of the actions and read over what they are doing and how they function.  
-   a. The PR size workflow ensure we do not add too many new files or new lines of code in a single PR.  
-   b. The file naming convention ensures we name files according to a prefix rule.  
-   c. The linting workflow enforces the rules we've specififed in our `.sqlfluff` file. Open up the `.sqlfluff file to look at the rulesets. This determines how our sql should be styled. 💅  
-   d. Our `dbt-ci-job` workflow builds only what has been modified and ensures our sql is actually valid to build the tables and views. Additionally, it runs all the data test checks.  
-   e. AI reivewer `pr_ai_reviewer` summons claude via API key to review and comment on the PR.  
-   f. Importantly, we want to specify the order in which these workflows run. For example, if our linting fails we want that to happen before we have to pay to use any tokens for Claude.  
+3. Open up each of the actions and read over what they are doing and how they function.<br>
+   a. The PR size workflow ensure we do not add too many new files or new lines of code in a single PR.<br>
+   b. The file naming convention ensures we name files according to a prefix rule.<br> 
+   c. The linting workflow enforces the rules we've specififed in our `.sqlfluff` file. Open up the `.sqlfluff file to look at the rulesets. This determines how our sql should be styled. 💅<br>
+   d. Our `dbt-ci-job` workflow builds only what has been modified and ensures our sql is actually valid to build the tables and views. Additionally, it runs all the data test checks.<br>
+   e. AI reivewer `pr_ai_reviewer` summons claude via API key to review and comment on the PR.<br>
+   f. Importantly, we want to specify the order in which these workflows run. For example, if our linting fails we want that to happen before we have to pay to use any tokens for Claude.<br>
 
 There is a lot going on here and this the heart of this workshop, so take time to understand on your own time too! 
 
