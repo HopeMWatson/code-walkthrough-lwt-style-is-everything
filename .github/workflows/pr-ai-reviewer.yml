@@ -1,9 +1,7 @@
-name: Claude Auto Review (main only, with tracking)
+name: Claude Auto Review (main only)
 
 on:
-  pull_request:
-    branches: [ main ]                          # ✅ only run for PRs into main
-    types: [opened, synchronize, ready_for_review, reopened]
+  workflow_call:
 
 jobs:
   review:

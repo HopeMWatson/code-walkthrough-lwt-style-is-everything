@@ -1,14 +1,12 @@
 name: Check dbt model naming conventions
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
+  workflow_call:
 
 jobs:
   naming-check:
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4

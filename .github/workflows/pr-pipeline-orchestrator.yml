@@ -1,0 +1,39 @@
+name: PR Pipeline Orchestrator
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - main # only run for PRs on main 
+
+jobs:
+  # 1) Run PR size check first
+  pr_size_check:
+    name: 1) PR Size Check
+    uses: ./.github/workflows/pr-size-check.yml
+
+  # 2) Run naming + linting in parallel once size check passes
+  file_naming:
+    name: 2a) File Naming Conventions
+    needs: [pr_size_check]
+    uses: ./.github/workflows/file_naming_conventions_check.yml
+
+  linting:
+    name: 2b) Linting (non-blocking)
+    needs: [pr_size_check]
+    uses: ./.github/workflows/linting.yml
+    # continue-on-error is set inside the called workflow's job; you can also keep an arguement here:
+    continue-on-error: true
+
+  # 3) Run dbt CI after both have completed (lint may fail but is non-blocking)
+  dbt_ci:
+    name: 3) dbt CI
+    needs: [file_naming, linting]
+    uses: ./.github/workflows/dbt-ci-job.yml
+
+  # 4) Run AI review only if everything before succeeded
+  pr_ai_review:
+    name: 4) PR AI Review
+    needs: [dbt_ci]
+    if: ${{ needs.dbt_ci.result == 'success' }}
+    uses: ./.github/workflows/pr_ai_review.yml
