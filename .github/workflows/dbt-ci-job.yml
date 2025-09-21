@@ -1,10 +1,7 @@
-name: dbt Build
+name: dbt CI 
 
 on:
-  pull_request:
-    branches: [ main ]
-  push:
-    branches: [ main ]
+  workflow_call:
 
 jobs:
   dbt-build:
@@ -33,35 +30,27 @@ jobs:
         
     - name: Run dbt deps
       run: dbt deps
-      
-    - name: Download previous state (for state comparison)
-      uses: actions/download-artifact@v4
+
+# ---- Restore previous state (cache) ----
+# Because we are in contained CI environment not getting any artifacts from prod to compare to -- we're going to use cache. 
+    - name: Restore previous state cache
+      id: state-restore
+      uses: actions/cache@v4
       with:
-        name: dbt-state-artifacts
-        path: previous-state/
-      continue-on-error: true
+        path: previous-state
+        key: dbt-state-${{ github.ref_name }}
+        restore-keys: |
+          dbt-state-${{ github.base_ref || 'main' }}
       
-    - name: Run dbt seed
-      run: dbt seed
-      
-    - name: Run dbt models (state:modified only)
+    - name: dbt build (state:modified if available)
+      shell: bash
       run: |
-        if [ -d "previous-state" ]; then
-          echo "🔄 Running state:modified models..."
-          dbt run --select state:modified --defer --state previous-state
+        if [ -f previous-state/manifest.json ]; then
+          echo "🔄 Using previous state: building state:modified+"
+          dbt build --state previous-state --select state:modified+
         else
-          echo "🚀 No previous state found, running all models..."
-          dbt run
-        fi
-      
-    - name: Run dbt tests (on modified models only)
-      run: |
-        if [ -d "previous-state" ]; then
-          echo "🧪 Testing state:modified models..."
-          dbt test --select state:modified --defer --state previous-state
-        else
-          echo "🧪 No previous state found, running all tests..."
-          dbt test
+          echo "🚀 Cold start: full build"
+          dbt build
         fi
       
     - name: Generate documentation
@@ -86,6 +75,22 @@ jobs:
         path: target/
         retention-days: 30
         
+    # Prepare & save fresh state for next run
+    - name: Prepare state bundle
+      if: always()
+      run: |
+        rm -rf previous-state
+        mkdir -p previous-state
+        cp -v target/manifest.json target/run_results.json target/catalog.json previous-state/ || true
+
+    - name: Save state cache
+      if: always()
+      uses: actions/cache/save@v4
+      with:
+        path: previous-state
+        key: dbt-state-${{ github.ref_name }}-${{ github.run_id }}
+
+
     - name: Display pipeline summary
       if: always()
       run: |

@@ -10,6 +10,8 @@ unset PYTHONWARNINGS
 
 PROJECT_NAME="lwt-style-is-everything"
 DBT_VERSION="1.10.10"
+SQLFLUFF_VERSION="3.4.2"
+DUCKDB_VERSION="1.3.2"
 
 echo "🚀 Setting up $PROJECT_NAME workshop environment..."
 
@@ -86,6 +88,11 @@ elif [[ "$OS_NAME" == "Linux" ]]; then
     mv duckdb venv-lwt-style-is-everything/bin/
     rm duckdb_cli.zip
 fi
+
+# Install SQLFluff with dbt templater
+echo "🧹 Installing SQLFluff..."
+pip install "sqlfluff==$SQLFLUFF_VERSION" "sqlfluff-templater-dbt==$SQLFLUFF_VERSION" --quiet
+
 
 # Create activation script
 cat > activate.sh << EOF

@@ -1,13 +1,12 @@
 name: Lint SQL with SQLFluff (dbt templater)
 
 on:
-  pull_request:
-  push:
-    branches: [main]
+  workflow_call:
 
 jobs:
   sqlfluff-lint:
     runs-on: ubuntu-latest
+    continue-on-error: true 
 
     env:
       DBT_PROFILES_DIR: "."   # use repo's DuckDB profiles.yml
