@@ -34,4 +34,4 @@ jobs:
     name: 4) PR AI Review
     needs: [dbt_ci]
     if: ${{ needs.dbt_ci.result == 'success' }}
-    uses: ./.github/workflows/pr-ai-review.yml
+    uses: ./.github/workflows/pr-ai-reviewer.yml
