@@ -9,11 +9,9 @@ profile: lwt-style-is-everything # Put your profile here
 model-paths: ["models"]
 analysis-paths: ["analyses"]
 test-paths: ["data-tests"]
-seed-paths: ["seeds/jaffle-data"]
+seed-paths: ["seeds"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
-
-target-path: "target"
 clean-targets:
   - "target"
   - "dbt_packages"
@@ -33,3 +31,5 @@ models:
       +materialized: view
     marts:
       +materialized: table
+flags:
+  require_generic_test_arguments_property: true
