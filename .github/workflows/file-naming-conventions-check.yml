@@ -27,14 +27,16 @@ jobs:
 
           invalid_staging=""
 
-          # Staging: must start with stg_
+          # Staging: must start with stg_ except sources
           # Flag any *.sql/*.yml/*.yaml in models/staging that DO NOT start with stg_
           staging_dir="models/staging"
           if [ -d "$staging_dir" ]; then
             invalid_staging=$(find_safe "$staging_dir" \
-              ! -name "stg_*.sql" \
-              ! -name "stg_*.yml" \
-              ! -name "stg_*.yaml" \
+              -not -name "stg_*.sql" \
+              -not -name "stg_*.yml" \
+              -not -name "stg_*.yaml" \
+              -not -name "*sources*.yml" \
+              -not -name "*sources*.yaml" \  
             || true)
           fi
 
