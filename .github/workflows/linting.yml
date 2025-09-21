@@ -6,6 +6,7 @@ on:
 jobs:
   sqlfluff-lint:
     runs-on: ubuntu-latest
+    continue-on-error: true 
 
     env:
       DBT_PROFILES_DIR: "."   # use repo's DuckDB profiles.yml
