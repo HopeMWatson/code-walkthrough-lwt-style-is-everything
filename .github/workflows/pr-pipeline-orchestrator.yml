@@ -16,7 +16,7 @@ jobs:
   file_naming:
     name: 2a) File Naming Conventions
     needs: [pr_size_check]
-    uses: ./.github/workflows/file_naming_conventions_check.yml
+    uses: ./.github/workflows/file-naming-conventions-check.yml
 
   linting:
     name: 2b) Linting (non-blocking)
@@ -34,4 +34,4 @@ jobs:
     name: 4) PR AI Review
     needs: [dbt_ci]
     if: ${{ needs.dbt_ci.result == 'success' }}
-    uses: ./.github/workflows/pr_ai_review.yml
+    uses: ./.github/workflows/pr-ai-review.yml
