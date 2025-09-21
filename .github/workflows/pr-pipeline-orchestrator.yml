@@ -22,8 +22,6 @@ jobs:
     name: 2b) Linting (non-blocking)
     needs: [pr_size_check]
     uses: ./.github/workflows/linting.yml
-    # continue-on-error is set inside the called workflow's job; you can also keep an arguement here:
-    continue-on-error: true
 
   # 3) Run dbt CI after both have completed (lint may fail but is non-blocking)
   dbt_ci:
