@@ -1,9 +1,7 @@
 name: Lint SQL with SQLFluff (dbt templater)
 
 on:
-  pull_request:
-  push:
-    branches: [main]
+  workflow_call:
 
 jobs:
   sqlfluff-lint:

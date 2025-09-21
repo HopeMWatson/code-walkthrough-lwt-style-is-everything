@@ -1,10 +1,7 @@
-name: dbt Build
+name: dbt CI 
 
 on:
-  pull_request:
-    branches: [ main ]
-  push:
-    branches: [ main ]
+  workflow_call:
 
 jobs:
   dbt-build:
