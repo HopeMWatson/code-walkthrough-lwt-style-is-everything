@@ -40,8 +40,10 @@ jobs:
         path: previous-state
         key: dbt-state-${{ github.ref_name }}
         restore-keys: |
-          dbt-state-${{ github.base_ref || 'main' }}
-      
+          dbt-state-${{ github.ref_name }}-  
+          dbt-state-${{ github.base_ref || 'main' }}-
+          dbt-state-
+        
     - name: dbt build (state:modified if available)
       shell: bash
       run: |
