@@ -35,6 +35,6 @@ jobs:
 
           claude_args: |
             --model claude-sonnet-4-20250514
-            --max-turns 1
+            --max-turns 8
             --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff --unified=3 --name-only),Bash(gh pr view --json=number,title,body,files)"
             --disallowedTools "*"
