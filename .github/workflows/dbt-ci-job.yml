@@ -1,7 +1,12 @@
-name: dbt CI 
+# .github/workflows/dbt-ci-job.yml
+name: dbt CI
 
 on:
   workflow_call:
+
+permissions:
+  contents: read
+  actions: read
 
 jobs:
   dbt-build:
@@ -29,28 +34,27 @@ jobs:
       - name: dbt deps
         run: dbt deps
 
-      # ----------------- ARTIFACT FALLBACK (no cache) -----------------
-      - name: Download latest state artifact from main
-        id: get-state
+      # ---------- download artifacts from main (no cache) ----------
+      - name: Download state (manifest/catalog) from main
         uses: dawidd6/action-download-artifact@v3
         with:
-          # IMPORTANT: set this to the workflow file that publishes dbt-state-artifacts on main
-          workflow: main-state-build
+          # Use the workflow FILE PATH to avoid 404s:
+          workflow: .github/workflows/main-state.yml
           branch: main
-          name: dbt-state-artifacts              # must match your upload name
+          name: dbt-state-artifacts
           path: previous-state
           if_no_artifact_found: warn
-        
+
       - name: Download DuckDB database from main
         uses: dawidd6/action-download-artifact@v3
         with:
-          workflow: main-state-build
+          workflow: .github/workflows/main-state.yml
           branch: main
           name: workshop-db
           path: .
-          if_no_artifact_found: error
+          if_no_artifact_found: warn
 
-      # Pick the right state directory (artifact structure may be ./target/*)
+      # ---------- resolve state dir (flat or nested) ----------
       - name: Resolve STATE_DIR
         id: state-dir
         shell: bash
@@ -63,7 +67,7 @@ jobs:
             echo "STATE_DIR=" >> $GITHUB_OUTPUT
           fi
 
-      # Copy state into ./target for partial parsing
+      # Prime ./target for partial parsing (keeps dbt quiet about saved manifest)
       - name: Prime partial parsing with downloaded state
         if: ${{ steps.state-dir.outputs.STATE_DIR != '' }}
         shell: bash
@@ -72,23 +76,34 @@ jobs:
           mkdir -p target
           rsync -a "${{ steps.state-dir.outputs.STATE_DIR }}/" target/
 
-      # ----------------- BUILD -----------------
-      - name: dbt build (self-contained; use artifact state if available)
+      # ---------- build: selective if changes, skip if none, full if no state ----------
+      - name: dbt build (changes only; skip if none; full if no state)
         shell: bash
         run: |
-          if [ -n "${{ steps.state-dir.outputs.STATE_DIR }}" ]; then
-            echo "🔄 Using state from ${{ steps.state-dir.outputs.STATE_DIR }}"
-            dbt build --select state:modified+ --state "${{ steps.state-dir.outputs.STATE_DIR }}"
+          STATE="${{ steps.state-dir.outputs.STATE_DIR }}"
+          if [ -n "$STATE" ]; then
+            # List modified nodes vs main (no deps)
+            CHANGED=$(dbt ls --state "$STATE" --select state:modified --output name | wc -l)
+            if [ "$CHANGED" -gt 0 ]; then
+              echo "🔄 $CHANGED modified nodes → selective build (defer to downloaded DB)"
+              # Ensure DB is present for deferral; if not, fail clearly
+              if [ ! -f workshop.duckdb ]; then
+                echo "❌ Expected workshop.duckdb for --defer but it wasn't downloaded."
+                exit 1
+              fi
+              dbt build --select state:modified+ state:new+ --defer --state "$STATE"
+            else
+              echo "✅ No graph-impacting changes vs main; skipping dbt build."
+            fi
           else
-            echo "🚀 No artifact state found → full build"
+            echo "🚀 No state available → full build"
             dbt build
           fi
 
       - name: dbt docs generate
         run: dbt docs generate
-
-      # ----------------- PUBLISH ARTIFACTS FOR NEXT RUNS -----------------
-      - name: Upload pipeline results
+        
+      - name: Upload pipeline results (debug)
         if: always()
         uses: actions/upload-artifact@v4
         with:
