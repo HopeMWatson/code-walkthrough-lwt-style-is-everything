@@ -35,7 +35,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v3
         with:
           # IMPORTANT: set this to the workflow file that publishes dbt-state-artifacts on main
-          workflow: pr-pipeline-orchestrator.yml
+          workflow: main-state.yml
           branch: main
           name: dbt-state-artifacts              # must match your upload name
           path: previous-state
