@@ -43,7 +43,13 @@ jobs:
 
       - name: Show what we downloaded
         run: |
-          echo "downloaded=${{ steps.get-state.outcomes && 'yes' || 'no' }}"
+          if [ -f previous-state/manifest.json ]; then
+            echo "downloaded=yes (flat)"
+          elif [ -f previous-state/target/manifest.json ]; then
+            echo "downloaded=yes (under target/)"
+          else
+            echo "downloaded=no"
+          fi
           ls -la previous-state || true
           ls -la previous-state/target || true
 

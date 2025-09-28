@@ -4,6 +4,15 @@ name: main-state-build
 on:
   push:
     branches: [ main ]
+    paths:
+      - models/**
+      - macros/**
+      - seeds/**
+      - snapshots/**
+      - analyses/**
+      - tests/**
+      - packages.yml
+      - dbt_project.yml
   workflow_dispatch: {}   # lets you run it manually from the Actions tab
 
 jobs:
@@ -41,4 +50,4 @@ jobs:
         with:
           name: dbt-state-artifacts            # <<< exact name your PR job downloads
           path: target/                        # contains manifest.json, catalog.json, etc.
-          retention-days: 14
+          retention-days: 30
