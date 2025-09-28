@@ -45,13 +45,12 @@ jobs:
           claude_args: |
             --model claude-sonnet-4-20250514
             --max-turns 12
-            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr view*),Bash(gh pr diff*),Bash(gh pr comment*),Bash(gh api*)"
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr comment:*),Bash(gh api:*),Bash(git *)"
             --disallowedTools "*"
-
-          # This is the important bit to avoid interactive prompts in CI:
           additional_permissions: >
             mcp__github_inline_comment__create_inline_comment,
-            Bash(gh pr view*),
-            Bash(gh pr diff*),
-            Bash(gh pr comment*),
-            Bash(gh api*)
+            Bash(gh pr view:*),
+            Bash(gh pr diff:*),
+            Bash(gh pr comment:*),
+            Bash(gh api:*),
+            Bash(git *)
