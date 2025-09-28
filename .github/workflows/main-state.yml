@@ -51,3 +51,12 @@ jobs:
           name: dbt-state-artifacts            # <<< exact name your PR job downloads
           path: target/                        # contains manifest.json, catalog.json, etc.
           retention-days: 30
+    
+      # Publish the DuckDB file used by your profile
+      - name: Upload DuckDB database
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: workshop-db
+          path: workshop.duckdb
+          retention-days: 30
