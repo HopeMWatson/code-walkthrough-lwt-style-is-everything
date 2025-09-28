@@ -72,7 +72,7 @@ jobs:
         run: |
           if [ -n "${{ steps.state-dir.outputs.STATE_DIR }}" ]; then
             echo "🔄 Using state from ${{ steps.state-dir.outputs.STATE_DIR }}"
-            dbt build --select +state:modified+ --state "${{ steps.state-dir.outputs.STATE_DIR }}"
+            dbt build --select state:modified+ --state "${{ steps.state-dir.outputs.STATE_DIR }}"
           else
             echo "🚀 No artifact state found → full build"
             dbt build
