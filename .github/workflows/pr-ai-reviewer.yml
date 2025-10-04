@@ -17,24 +17,33 @@ jobs:
           fetch-depth: 1
 
       - uses: anthropics/claude-code-action@v1
-        env: 
-          DISABLE_PROMPT_CACHING: "1"
+        env:
+          # Enable caching if you want; not required.
+          DISABLE_PROMPT_CACHING: "0"
+          # Ensure gh CLI is authenticated for Bash tools:
+          GH_TOKEN: ${{ github.token }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
 
-            Please review this pull request with a focus on:
+            First, post a short top-level PR comment acknowledging the review has started.
+            When using GitHub CLI, ALWAYS include the explicit PR number.
+
+            Then review this pull request with a focus on:
             - Code quality and best practices
             - Potential bugs or issues
             - Security implications
             - Performance considerations
 
-            Provide detailed feedback using inline comments for specific issues.
+            Use `gh pr comment $PR` for summary comments.
+            Use `mcp__github_inline_comment__create_inline_comment` for inline code issues.
+            Only post GitHub comments; don't return the review as plain messages.
 
           claude_args: |
             --model claude-sonnet-4-20250514
-            --max-turns 1
-            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff --unified=3 --name-only),Bash(gh pr view --json=number,title,body,files)"
+            --max-turns 12
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr comment:*),Bash(gh api:*),Bash(git *)"
             --disallowedTools "*"
