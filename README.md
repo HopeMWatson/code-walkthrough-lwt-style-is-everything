@@ -48,46 +48,87 @@ We’ll go step by step:
 ---
 
 ## 0. Addressing Prerequisites
- - Ensure you are able to clone a github respository using *SSH*. It is best to use SSH since we will be making changes to the repository. If you don't have a `.ssh` already setup you will need to do that. 
+ - Ensure you are able to clone a github respository using **SSH**. It is best to use SSH since we will be making changes to the repository. If you don't have a `.ssh` already setup you will need to do that. 
  - You will need a Claude API key. At the time of writing the Claude API requires separate credits from Pro subscription. Our workflow will cost approximately $0.12. To iterate on the pipeline I suggest $1.00 of API credits. 
  - The ability to install software. Many work computers do not allow downloads of software that are not from a trusted software center. For this reason I recommend using personal accounts for this workshop where possible. All software is installed in a venv that can be easily deleted following the workshop. 
 
 
 ## ⚙️ 1. Setup
-### Cloning Repo and Setting up Venv 
-1. Open VSCode and open a `New Terminal`. 
+### Cloning Repo to local 
+1. Open VSCode and go to **Terminal** -> **New Terminal**. 
 2. Navigate to a directory you want to clone the git repository into. For your home directory use `cd ~`. 
 3. Clone the workshop repository: 
     ```bash 
-    git clone git@github.com:HopeMWatson/lwt-style-is-everything.git
-    cd lwt-style-is-everything
+    git clone git@github.com:HopeMWatson/lwt-style-is-everything.git code-walkthrough-lwt-style-is-everything
+    cd code-walkthrough-lwt-style-is-everything
     ```
-4. Create virtual environment (venv):
+
+We now have our local repo. 
+### Remote GitHub Repository 
+We need to run our actions from GitHub which means we need to create a remote version of the repo. 
+1. Go to github.com and make sure you are logged in.
+2. Navigate to **Repositories** and create a new repo **New**. 
+3. Name the repo `code-walkthrough-lwt-style-is-everything` and **Create repository**. 
+CALLOUT: Before you get click happy don't use the code github suggests. This is because we are working from a cloned repo.
+Notice that we have an empty repo. 
+
+We have now created a remote repository. In our next step we need to link our local clone to remote. 
+
+### Link local and remote repos
+1. Make sure you are in your project directory:
+```bash 
+cd code-walkthrough-lwt-style-is-everything 
+```
+2. Set the remote so we link our local and remote. 
+```bash 
+git remote set-url origin git@github.com:HopeMWatson/code-walkthrough-lwt-style-is-everything.git
+git push -u origin main
+```
+3. Head back to your repo on GitHub and refresh the webpage. Notice the entire project has been brought in and pushed to our remote repo! 
+
+While we are still on GitHub let's get the Claude GitHub app installed. 
+
+### Install Claude GitHub app 
+The Claude GitHub app allows us to run Claude Code from your GitHub Pull Requests. If you already have it installed you are good to go, otherwise install the app using the next step. 
+1. Navigate to Claude GitHub app, which can be found here https://github.com/apps/claude. 
+2. **Install** and select user (if you have multiple users). 
+3. Decide if you are okay with Claude app to work across *All repositories* or *Only select repositories*. I chose *All repositories*. 
+4. **Install & Authorize**. 
+
+### Activate local venv 
+1. Navigate back to VSCode. 
+2. Create virtual environment (venv):
     ```bash 
     bash setup-workshop.sh
     ```
-    
-    Give the venv script time to complete. 
-5. Activate the venv
+Give the venv script time to complete. 
+3. Activate the venv
     ```bash
     source activate.sh
     ``` 
-### Remote GitHub Repository 
-We need to run our actions from GitHub which means we need to create a remote version of the repo. 
--- TODO add additional detail for setting up repo. Make sure we name repo differently for participants. 
-    
-    We are now working inside of our local workshop venv. 
-### Install Claude GitHub app 
-1. The Claude GitHub app allows us to run Claude Code from your GitHub Pull Requests. If you already have it installed you are good to go, otherwise install the app using the next step. 
-2. Install the Claude GitHub app, which can be found here https://github.com/apps/claude. 
 
 ## 2. Run local data pipeline 
 1. Install dbt project dependencies
-    ```
+    ```bash 
     dbt deps
     ``` 
 2. Execute entire pipeline including building tables, views, and running tests. 
-3. Explatory data analysis on what we just built using duckdb. 
+```bash 
+dbt build 
+```
+After running our `dbt build` you should see a file `workshop.duckdb` that was created. 
+This is an enitre databse in a file -- duckdb is very cool; check it out at [duckdb.org](https://duckdb.org/)
+
+3. Let's do some explatory data analysis on what we just built using duckdb. To boot up the duckdb CLI on our database use `duckdb workshop.duckdb`. 
+4. See what commands are available to us type `.help` in the command line. 
+5. Looks like we have some interesting commands such as `.tables` let's use that one to see the tables we built as part of our `dbt build`. \n 
+Write `.tables` in the command line and enter. 
+6. I'm interested in our `orders` table, let's take a closer look, type:
+`select * from orders;` in the command line. 
+7. Investigate one or two more tables on your own using the duckdb CLI. 
+8. To quit the duckdb CLI write `.quit` in the command line. 
+
+
 
 ## 3. Read action code and learn its functions
 1. Open `.github/workflows`.
@@ -161,6 +202,13 @@ If you don't want this repository on your computer or GitHub following the works
 1. Navgiate to the *Settings* area of your repository.
 2. Head on down to the end of the page to the *Danger Zone*
 3. Select *Delete this repository*. 
+
+# Instructor notes 
+1. To ensure I don't overwrite my authored workshop give the repo a different name. 
+```bash 
+git clone git@github.com:HopeMWatson/lwt-style-is-everything.git code-walkthrough-lwt-style-is-everything
+```
+
 
 # Contributing to this repository 
 This is a workshop repository, so usually that means it is narrowly scoped and rarely iterated on by contributors.
