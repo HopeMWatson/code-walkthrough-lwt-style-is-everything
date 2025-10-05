@@ -1,10 +1,10 @@
-# 🏗️ Style is Everything  
+# 💅 Style is Everything  
 Clean Code, Beautiful Collaboration, and the AI Reviewer Era  
 LWT Workshop 2025 — Hope Watson
 
 ---
 
-## 📋 Materials You'll Need - Prerequisites 
+## 🧰 Materials You'll Need - Prerequisites 
 
 Before you begin, make sure you have:
 
@@ -17,7 +17,7 @@ Before you begin, make sure you have:
 
 ---
 
-## 🚀 Workshop Goals
+## 🏁 Workshop Goals
 
 By the end of this workshop, you will:
 
@@ -28,7 +28,7 @@ By the end of this workshop, you will:
 
 ---
 
-## Workshop Architecture 
+## 🏗️ Workshop Architecture 
  - TODO placeholder for diagram 
 
 ---
@@ -36,7 +36,7 @@ By the end of this workshop, you will:
 ## 🗂️ Workshop Outline
 
 We’ll go step by step:
-
+0. Addressing Prerequisites
 1. **Setup** — Environment, repos, and installs  
 2. Run local data pipeline 
 3. Read action code 
@@ -251,6 +251,7 @@ GitHub also sent us an email with our Claude summary -- I think this is cool, bu
 
 ## 6. (Optional) Turn off `ENABLE_AI_REVIEW` 
 We don't need our AI Reviewer step on to clean up our SQL styling to fix our linting step. 
+This step is optional, if you leave the AI Reviewer turned on it will cost another ~$0.16 in credits. 
 
 1. Head back to your GitHub repo settings and variable. 
 2. Change the value of `ENABLE_AI_REVIEW` to `false`.
@@ -264,9 +265,35 @@ We have to fix our ugly code!
 1. Go back VSCode to your working branch and ensure you have a clean branch:
     ```git checkout working-branch```
     ``` git status``(ensure it's up to date)
-2. 
--- TODO placeholder for sqlfluff changes and then committing  
+2. Let's lint our entire project:
+    ```
+    sqlfluff lint . 
 
+    ```
+    We should see the warnings that were flagged during our run. 
+3. Now we can fix all the warnings by running:
+    ```
+    sqlfluff fix .
+    ```
+    You will see that your files have been modified `M` by the linter. 
+4. To confirm we will have no violations let's lint again:
+    ```
+    sqlfluff lint . 
+    ```
+5. We now need to check our git status and commit our changes after cleaning up the styling.
+    ```
+    git status
+    ``` 
+    ```
+    git commit -am "linting project to maintain style guide according to .sqlfluff"
+    ```
+6. Push the change 
+    ``` 
+    git push
+    ``` 
+7. Navigate back to GitHub and see our PR Pipeline Orchestrator kicked off again with our new commit. 
+
+Our linting step now passes! 
 
 ## 8. Recapping, Next Steps, and Cleanup
 ### Recapping
@@ -279,24 +306,18 @@ Now for the cleanup and teardown.
 If you don't want this repository on your computer or GitHub following the workshop here are the instructions. 
 
 #### Local cleanup 
-1. For local cleanup navigate the the directory in your terminal. We can wildcard it to find it regardless of the directory you cloned into:
+1. For local cleanup navigate the the directory in your terminal: 
     ```bash 
-    cd *lwt-style-is-everything*
+    cd code-walkthrough-lwt-style-is-everything
     ```
-2. *Only run this if you want the entire repository deleted:*
+2. **Only run this if you want the entire repository deleted**
     ```bash 
-    rm -rf lwt-style-is-everything
+    rm -rf code-walkthrough-lwt-style-is-everything
     ```    
 #### Remote GitHub cleanup 
-1. Navgiate to the *Settings* area of your repository.
-2. Head on down to the end of the page to the *Danger Zone*
-3. Select *Delete this repository*. 
-
-# Instructor notes 
-1. To ensure I don't overwrite my authored workshop give the repo a different name. 
-```bash 
-git clone git@github.com:HopeMWatson/lwt-style-is-everything.git code-walkthrough-lwt-style-is-everything
-```
+1. Navgiate to the **Settings** area of your repository.
+2. Head on down to the end of the page to the **Danger Zone**
+3. Select **Delete this repository**. 
 
 
 # Contributing to this repository 
@@ -305,6 +326,7 @@ However, I welcome feedback, suggestions, and opening issues!
 
 One aspect of this workshop I didn't have time to address is Windows friendly instructions; it is written for MacOS and linux. 
 If you want to make this workshop Windows friendly please feel free to contribute. 
+I also would have combined the sqlfluff and dbt CI build steps if more time had allowed for pipeline efficiency. 
 
 # Acknowledgements 
 Firstly, I have to thank the dbt Labs teams since I'm building on prior art from the long lived jaffle shop. 
