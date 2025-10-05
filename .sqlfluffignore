@@ -1,4 +1,14 @@
+# Ignore virtual environments
+venv*/
+.venv*/
+**/site-packages/**
+**/venv-*/
+**/.venv-*/
+
+# Ignore dbt build outputs and deps
 target
 dbt_packages
+dbt_modules/
 macros
-.venv
+
+
