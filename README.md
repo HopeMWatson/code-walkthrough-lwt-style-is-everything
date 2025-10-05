@@ -13,7 +13,7 @@ Before you begin, make sure you have:
 - [ ] Local IDE (VSCode recommended)  
 - [ ] Ability to install software locally (DuckDB, dbt, SQLFluff)  
 
-💡 *Tip: Use a personal account to avoid access/permission issues. Setup will run inside a `venv`, which you can delete afterward. The AI reviewer step costs ~0.12¢ in Claude tokens.* 
+💡 *Tip: Use a personal account to avoid access/permission issues. Setup will run inside a `venv`, which you can delete afterward. The AI reviewer step costs ~$0.15 in Claude tokens.* 
 
 ---
 
@@ -128,7 +128,7 @@ Write `.tables` in the command line and enter.
 7. Investigate one or two more tables on your own using the duckdb CLI. 
 8. To quit the duckdb CLI write `.quit` in the command line. 
 
-
+That brings us back to our directory. Now is a good time to take a look our project and pipelines. 
 
 ## 3. Read action code and learn its functions
 1. Open `.github/workflows`.
@@ -144,42 +144,131 @@ Write `.tables` in the command line and enter.
 
 There is a lot going on here and this the heart of this workshop, so take time to understand on your own time too! 
 
+### Claude reviewer variable and Claude API key
+#### Set GitHub variable for AI reviewewr
+You saw in our `pr-pipeline-orchestrator` pipeline we use a variable `vars.ENABLE_AI_REVIEW == 'true'` as a switch to decide if we want the AI reviewer pipeline on. This can be helpful to control costs if you don't want the AI review pipeline running on every PR. 
+1. In your GitHub repo go to **Settings**.
+2. **Secrets and variables** -> **Actions** -> **Variables**.
+3. **New repository variable**
+4. **Name** the variable `ENABLE_AI_REVIEW` and set the **Value** to `true` and **Add variable**.
+Our variable is set to allow our AI Reviewer pipeline to run. 
+
+#### Claude API key
+We need to create an Claude API to actually call Claude into our review process that we pass into a GitHub secret.
+1. Go to [Claude Console](https://console.anthropic.com/dashboard) and click **Get API Key**. 
+2. **Create Key**, select your workspace, and name your key; I named mine `code-walkthrough-lwt`. 
+3. **Copy Key**. Note: in a production setting you may also place your key into another secrets manager software like AWS secrets manager or 1password. 
+4. Go back to GitHub in your repo to **Settings**.
+5. **Secrets and variables** -> **Actions** -> **New respository secret**.
+6. **Name** the secret `ANTHROPIC_API_KEY` and copy in your **Secret** and finally **Add secret**. 
+
+Now we have a way to securely Claude into our GitHub Actions. 
+
+#### Generate dbt artifacts for "Production" deferral CI job
+In this step we are simulating a production run to generate data and metadata for our CI job to defer to. 
+Think of it as created both the code and data baseline state for CI to defer to! 
+
+I admit, state and tracking state can be a very complex topic outside the scope of this workshop. 
+What I will say is take time to think about how often the state of code changes. When you change the logic of your code the effects data, you then want your data pipeline to run again to reflect those changes. 
+
+1. In our `code-walkthrough-lwt-style-is-everything` repo go to **Actions**. 
+2. Select the `main-state-build` action. 
+3. Click **Run workflow** to manually trigger the workflow off the `main` branch. 
+4. The workflow will kick off an take about a 45 seconds to complete.
+Note in the step `Full build on main` we run all 47 seeds, models, and tests. Keep this number in mind when we run the CI pipeline.
+5. After the workflow is complete look at **Artifacts**. Both `dbt-state-artifacts` and `workshop.db` were created. 
+What are these artifacts doing? Respectively `dbt-state-artifacts` is tracking the state of our code and `workshop.db` is tracking the state of our data. 
+
+Why did we do this?
+Now when we run a CI job, we only have to create what we changed and downstream impacts of the change instead of rerunning everything.  
+
 ## 4. Trigger GitHub workflows for the first time 
 1. Make a working branch:
     ``` git checkout -b working-branch```
     Double check you are in your working branch:
     ```git branch```
-2. Open the SQL file `customers.sql` and make a dummy comment to commit, for example:
-    ` -- dummy commment` 
-
-    Note my spelling mistake of "comment" to "commment" is intentional. 
+2. Open the SQL file `locations.sql` and replace the `*` with the actual column names. Please leave out `opened_date` on purpose! 
+    ```sql
+    location_id,
+    location_name, 
+    tax_rate
+    ```
 3. Save the change in the VSCode.
-4. Add and commit the change:
-    ```git commit -am "dummy comment to view pipelines" ```
-5. Before we move on can you guess workflow(s) of the four workflows will fail: pr size, file naming, sqlfluff, and dbt build? Ignore AI reviewer pipeline for now. 
+4. Check your git status using `git status` to ensure the modification was just tracked. 
+5. Add and commit the change:
+    ```git commit -am "explicit naming of locations columns" ```
+6. Push your changes using `git push --set-upstream origin working-branch`. 
 
-## 5. Investigate pipelines on GitHub 
-1. Review pipeline runs and address errors. 
-2. We should see errors both on file naming and sqlfluff. 
-3. Note how the AI reviewer pipeline was blocked! 
-4. It's time to resolve the style issues we have locally, commit those changes, and re-trigger our pipelines with the new commit. 
+- Before we move on can you guess workflow(s) of the four workflows will fail: pr size, file naming, sqlfluff, and dbt build? Ignore AI reviewer pipeline for now. 
 
+7. Navigate to GitHub and **Pull requests** -> **New pull request** and select `working-branch` and **Create pull request**. 
+8. Select **Create pull request** again. 
+9. You will now see our `PR Pipeline Orchestrator` kickoff. 
 
-## 6. Fixing errors locally
-### Naming Conventions 
-1. Stepping back, our naming convention for marts doesn't actually seem fit for purpose. Let's quickly make a separate branch to take that logic out and make a small PR to merge into `main` to update the naming convention pipeline logic. In reality this is an adjustment you would talk to your team and the business about first. 
+## 5. Investigating the PR Pipeline Orchestrator Results.
+1. First up is our PR size check, how did we do:
+```
+🔍 Checking PR size limits...
+📁 Files changed: 1
+📊 Lines added: 5
+📊 Lines removed: 1
+📊 Net lines: 4
+✅ PR size is within limits
+📋 Summary:
+  - Files: 1/100
+  - Lines added: 5/10,000
+```
+We definitely passed this!
 
--- TODO add more step by step points here. 
+2. How about File naming conventions:
+``` 
+✅ All model and YAML filenames follow conventions.
+```
+Looks great! 
 
-### sqlfluff
-1. Go back to your working branch and ensure you have a clean branch:
+3. Linting 
+Oof -- not so much. We have some trailing whitespace and ugly sql. 
+We failed this step, but we allowed `continue on error` so it did not halt our entire pipeline! 
+
+4. How about our dbt CI build? 
+Firstly, our CI pass checks which means if we did promote this change to production it would not break out pipelines. 
+
+Additionally, note how only the changed model was run instead of all 47 models. Since `locations` has no downstream impact on another model, it is the only one run. 
+```
+1 of 1 START sql table model main.locations .................................... [RUN]
+1 of 1 OK created sql table model main.locations ............................... [OK in 0.11s]
+```
+
+5. Finally, what is our AI review telling us? 
+Claude took a minute and $0.15 to review all of our code.
+    1. Go to **Pull requests** and see where Claude has added comments to our code!
+    2. Claude flagged a *Potential Data Loss* by excluding the column `opened_date` and asks us to add it back in or add a comment in the SQL as to exactly why we are leaving it out. 
+    3. Claude is also praising us for using explicit column naming instead of implicit for clarity! 
+
+Claude caught an issue that could happen in the real world -- a developer accidentally omits a column that impacts the schema of a table used for reporting and breaks it. 
+
+GitHub also sent us an email with our Claude summary -- I think this is cool, but if you find it noisy you could disable the emails. 
+
+## 6. (Optional) Turn off `ENABLE_AI_REVIEW` 
+We don't need our AI Reviewer step on to clean up our SQL styling to fix our linting step. 
+
+1. Head back to your GitHub repo settings and variable. 
+2. Change the value of `ENABLE_AI_REVIEW` to `false`.
+3. This will prompt verification code sent to your email. 
+
+Our AI Reviewer step will now be skipped! 
+
+## 7. Fixing linting errors locally
+We have to fix our ugly code! 
+
+1. Go back VSCode to your working branch and ensure you have a clean branch:
     ```git checkout working-branch```
     ``` git status``(ensure it's up to date)
 2. 
 -- TODO placeholder for sqlfluff changes and then committing  
 
 
-## 7. Recapping, Next Steps, and Cleanup
+## 8. Recapping, Next Steps, and Cleanup
 ### Recapping
 
 
