@@ -2,8 +2,8 @@ with
 
 supplies as (
 
-    select * from {{ ref('stg_supplies') }}
+    SELECT * FROM {{ ref('stg_supplies') }}
 
 )
 
-select * from supplies
+select * From supplies
