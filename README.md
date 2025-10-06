@@ -356,12 +356,9 @@ Our linting step now passes!
 ## 9. Recapping, Next Steps, and Cleanup
 ### Recapping
 We just proved that **style really *is* everything** — from linted SQL to orchestrated pipelines to beautifully reviewed PRs. 💅  
-
-You watched **structure, clarity, and automation** come together like a well-styled outfit: every step intentional, nothing out of place.💃   
-
-Claude didn’t just review our code — it was our **personal code stylist**. 🤖  
-
-Now our code is so beautiful, even your coworkers can’t side-eye 👀 it — they’ll just quietly copy your style. 😉  
+- You watched **structure, clarity, and automation** come together like a well-styled outfit: every step intentional, nothing out of place.💃   
+- Claude didn’t just review our code — it was our **personal code stylist**. 🤖  
+- Now our code is so beautiful, even your coworkers can’t side-eye 👀 it — they’ll just quietly copy your style. 😉  
 
 Because in the end, **imitation is the sincerest form of flattery**, especially when your SQL is serving both **looks *and* logic**. 🔥  
 
