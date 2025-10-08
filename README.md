@@ -30,6 +30,7 @@ By the end of this workshop, you will:
 
  ![workshop architecture diagram](./.assets/lwt-style-is-everything-diagram.png)
 
+Note: GitHub Copilot is optional as you might want to use it as a code assistant, but it is not required or shown in steps.  
 
 ---
 
