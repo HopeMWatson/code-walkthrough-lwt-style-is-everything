@@ -27,7 +27,9 @@ By the end of this workshop, you will:
 ---
 
 ## 🏗️ Workshop Architecture 
- - TODO placeholder for diagram 
+
+ ![workshop architecture diagram](./.assets/lwt-style-is-everything-diagram.png)
+
 
 ---
 
@@ -35,13 +37,15 @@ By the end of this workshop, you will:
 We’ll go step by step: 
 
 0. Addressing Prerequisites (Optional) 
-1. **Setup** — Environment, repos, and installs  
+1. Setup
 2. Run local data pipeline 
-3. Read action code 
-4. Make SQL change and trigger PR 
-5. Fix sqlfluff styling locally
-6. Observe full pipeline and AI reviewer feedback
-7. Wrap-Up & Next Steps
+3. Read action code and learn its functions
+4. Claude reviewer variable and Claude API key
+5. Trigger `pr-pipeline-orchestrator` GitHub workflow for the first time 
+6. Investigating the PR Pipeline Orchestrator Results.
+7. (Optional) Turn off `ENABLE_AI_REVIEW` 
+8. Fixing linting errors locally and adding `opened_date`
+9. Recapping, Next Steps, and Cleanup
 
 ---
 
